@@ -195,7 +195,6 @@ nav#sidebar .nav-dot {
 
 .project-card:hover {
   border-color: var(--accent-cyan);
-  transform: translateY(-4px);
   box-shadow: 0 0 30px rgba(0, 229, 255, 0.15), 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
@@ -410,7 +409,7 @@ nav#sidebar .nav-dot {
   background: var(--accent-cyan);
   border-radius: 50%;
   pointer-events: none;
-  z-index: 9999;
+  z-index: var(--z-cursor);
   transform: translate(-50%, -50%);
   box-shadow: 0 0 12px var(--accent-cyan), 0 0 24px rgba(0, 229, 255, 0.5);
   transition: width 0.15s ease, height 0.15s ease, background 0.15s ease;
@@ -432,7 +431,7 @@ nav#sidebar .nav-dot {
   border: 1px solid var(--accent-cyan);
   border-radius: 50%;
   pointer-events: none;
-  z-index: 9998;
+  z-index: calc(var(--z-cursor) - 1);
   transform: translate(-50%, -50%);
   opacity: 0.5;
   transition: width 0.2s ease, height 0.2s ease, opacity 0.2s ease,
@@ -512,4 +511,21 @@ nav#sidebar .nav-dot {
   border-color: #0A66C2;
   color: #0A66C2;
   box-shadow: 0 0 16px rgba(10, 102, 194, 0.35);
+}
+
+/* ---- 3D Card Tilt ---- */
+.card-3d {
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+}
+
+.card-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.35s ease;
 }

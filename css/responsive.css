@@ -29,9 +29,65 @@
   .project-card .card-name { font-size: 22px; }
 }
 
-/* Touch devices — hide custom cursor, restore default */
+/* Touch devices \u2014 hide custom cursor, restore default */
 @media (hover: none) and (pointer: coarse) {
   .cursor-dot,
   .cursor-ring { display: none; }
   body { cursor: auto; }
+}
+
+/* ---- Touch Ripple ---- */
+.touch-ripple {
+  position: fixed;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-cyan);
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+  z-index: var(--z-cursor);
+  animation: touchRipple 0.6s ease-out forwards;
+}
+
+@keyframes touchRipple {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(8);
+    opacity: 0;
+    border-color: var(--accent-orange);
+  }
+}
+
+/* ---- Touch Tactile States ---- */
+@media (max-width: 1024px) {
+  .hero-cta,
+  .contact-cta,
+  .boot-enter-btn,
+  .floating-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .hero-cta:active,
+  .contact-cta:active {
+    transform: scale(0.96);
+  }
+
+  .project-card,
+  .skill-category {
+    min-height: 44px;
+  }
+
+  .hamburger {
+    width: 48px;
+    height: 48px;
+  }
+
+  .about-visual,
+  .hero-inner {
+    transition: transform 0.3s ease-out;
+  }
 }

@@ -25,6 +25,9 @@ App.main = {
     App.navigation.init();
     App.animations.init();
     App.theme.init();
+    App.scratch.init();
+    App.card3d.init();
+    App.mobileInteract.init();
 
     // 5. Start boot sequence (blocks UI until complete)
     App.boot.init();

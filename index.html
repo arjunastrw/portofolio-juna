@@ -56,6 +56,9 @@ Architecture: multi-file, data-driven, single render loop
   <script src="js/animations.js"></script>
   <script src="js/navigation.js"></script>
   <script src="js/theme.js"></script>
+  <script src="js/scratch.js"></script>
+  <script src="js/card3d.js"></script>
+  <script src="js/mobile-interact.js"></script>
   <script src="js/main.js"></script>
 </head>
 <body>
@@ -120,8 +123,9 @@ Architecture: multi-file, data-driven, single render loop
   <section id="about">
     <div class="section-grid">
       <div class="about-visual">
-        <div class="about-geo">
+        <div class="about-geo scratch-wrapper">
           <img src="profile.png" alt="Profile photo" class="about-profile-img" width="280" height="280" loading="lazy" />
+          <canvas class="scratch-canvas"></canvas>
         </div>
       </div>
       <div>
