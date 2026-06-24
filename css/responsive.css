@@ -1,0 +1,37 @@
+/* ========================================
+   RESPONSIVE — Mobile + Tablet breakpoints
+   ======================================== */
+
+/* Tablet (≤768px) */
+@media (max-width: 768px) {
+  nav#sidebar { display: none; }
+  .hamburger { display: flex; }
+  main { margin-left: 0; }
+  footer { margin-left: 0; }
+
+  section { padding: 80px 6vw; }
+  .section-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  #projects .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-title { font-size: clamp(36px, 10vw, 56px); }
+  .skill-category { flex: 1 1 100%; }
+  .floating-btn.top-right-1 { top: 20px; right: 76px; }
+}
+
+/* Small Phone (≤480px) */
+@media (max-width: 480px) {
+  #hero .hero-inner { padding: 0 5vw; }
+  .project-card .card-name { font-size: 22px; }
+}
+
+/* Touch devices — hide custom cursor, restore default */
+@media (hover: none) and (pointer: coarse) {
+  .cursor-dot,
+  .cursor-ring { display: none; }
+  body { cursor: auto; }
+}

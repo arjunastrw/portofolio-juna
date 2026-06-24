@@ -1,0 +1,39 @@
+/* ========================================
+   DESIGN TOKENS — Dusk & Neon Palette
+   ======================================== */
+:root {
+  --bg-deep: #0D0D0D;
+  --bg-surface: #1A1A1A;
+  --primary: #2A1B38;
+  --secondary: #6B3F7A;
+  --accent-orange: #F5A623;
+  --accent-cyan: #00E5FF;
+  --text-body: #E0E0E0;
+  --text-heading: #FFFFFF;
+  --glitch-pink: #FF0055;
+  --glitch-mint: #00FFAA;
+  --border-subtle: rgba(107, 63, 122, 0.3);
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-sans: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --z-canvas: 0;
+  --z-particles: 1;
+  --z-overlays: 2;
+  --z-content: 10;
+  --z-sidebar: 100;
+  --z-mobile-nav: 150;
+  --z-hamburger: 200;
+  --z-loader: 10000;
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --bg-deep: #F0EDF5;
+  --bg-surface: #FFFFFF;
+  --text-body: #2D2D2D;
+  --text-heading: #0D0D0D;
+  --primary: #E8DFF0;
+  --secondary: #8B6BA0;
+  --border-subtle: rgba(107, 63, 122, 0.2);
+}
