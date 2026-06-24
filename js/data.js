@@ -41,7 +41,7 @@ App.data = {
     eyebrow: '// Full-Stack Developer & Automation Engineer',
     titleLine1: 'Systems that',
     titleLine2: 'move money',
-    subtitle: 'Building financial platforms, trading bots, and automation pipelines. From stock exchange dashboards to prediction market SDKs — code that runs 24/7.',
+    subtitle: 'Building Emiten management systems, automation pipelines, and high-performance microservices. From stock exchange infrastructure to trading bots — code that runs 24/7.',
     cta: 'View Projects',
     terminal: [
       { cmd: 'npm run dev -- idxnet-web', out: '✓ ready — port 3000', outColor: 'var(--glitch-mint)' },
@@ -54,8 +54,8 @@ App.data = {
     brand: 'JUNA.DEV',
     tag: '// About',
     heading: 'Hello. I\'m<br>Juna.',
-    body: 'A full-stack developer specializing in financial platforms, trading automation, and microservices architecture. I build systems that process real-time data, execute trades, and visualize markets — from Indonesia Stock Exchange to prediction markets.',
-    techList: 'Currently working with: Go · React · Laravel · Flutter · Python · n8n · Trading Bots',
+    body: 'A full-stack developer building Emiten management systems for the Indonesia Stock Exchange, trading automation bots, and microservices infrastructure. I build systems that process real-time data and manage complex workflows at scale.',
+    techList: 'Currently working with: Go · React · Laravel · Flutter · Python · n8n · Automation',
   },
 
   projects: [
@@ -63,7 +63,7 @@ App.data = {
       index: '01 / 08',
       titlebar: 'idxnet_web.exe',
       name: 'BEI Lines (IDXNet)',
-      desc: 'Full-stack financial exchange platform for the Indonesia Stock Exchange. Microservices architecture with React frontend and Go backend services.',
+      desc: 'Emiten management system for the Indonesia Stock Exchange. Handles listed company registration, disclosures, XBRL reporting, and regulatory compliance workflows.',
       tags: ['React', 'TypeScript', 'Microservices', 'Go', 'ActiveMQ'],
       glitchBg: 'rgba(255,0,85,0.08)',
     },
