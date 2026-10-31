@@ -1,0 +1,59 @@
+# Builds the site and publishes dist/ to GitHub Pages (arjunastrw.web.id, via public/CNAME).
+#
+# One-time setup (repository settings):
+#   1. Settings → Pages → Build and deployment → Source: "GitHub Actions".
+#   2. Settings → Secrets and variables → Actions → secret NDA_TERMS with the contents of
+#      the local, git-ignored .nda-terms file. The build fails without it, on purpose:
+#      this repository is public and the NDA check must never be skipped silently.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer push waits instead of cancelling a running deploy.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Playwright is a dev tool for local QA screenshots only; never download browsers in CI.
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # tsc, vite build, NDA scan and bundle budget (see package.json "build").
+      - run: npm run build
+        env:
+          NDA_TERMS: ${{ secrets.NDA_TERMS }}
+          NDA_REQUIRED: 'true'
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

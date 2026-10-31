@@ -4,6 +4,7 @@
  *
  * The term list lives in `.nda-terms` (git-ignored, one term per line, `#` for comments),
  * because listing client names in this public repository would itself be a leak.
+ * In CI the same list comes from the NDA_TERMS secret (same format).
  * All-caps terms (acronyms) match case-sensitively as whole words; everything else
  * matches case-insensitively as whole words.
  */
@@ -15,12 +16,22 @@ const termsFile = join(root, '.nda-terms');
 const targets = ['src', 'public', 'index.html', 'dist/index.html'];
 const textExt = new Set(['.ts', '.tsx', '.js', '.css', '.html', '.json', '.webmanifest', '.md', '.txt', '']);
 
-if (!existsSync(termsFile)) {
-  console.warn('[check-nda] .nda-terms not found; skipping. Create it locally to enable the check.');
+const source = process.env.NDA_TERMS?.trim()
+  ? process.env.NDA_TERMS
+  : existsSync(termsFile)
+    ? readFileSync(termsFile, 'utf8')
+    : null;
+
+if (source === null) {
+  if (process.env.NDA_REQUIRED === 'true') {
+    console.error('[check-nda] NDA_REQUIRED is set but no term list was provided (NDA_TERMS secret missing?).');
+    process.exit(1);
+  }
+  console.warn('[check-nda] no .nda-terms file or NDA_TERMS env; skipping. Create it locally to enable the check.');
   process.exit(0);
 }
 
-const terms = readFileSync(termsFile, 'utf8')
+const terms = source
   .split('\n')
   .map((line) => line.trim())
   .filter((line) => line && !line.startsWith('#'));
