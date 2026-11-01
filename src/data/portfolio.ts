@@ -51,7 +51,17 @@ export interface ToolGroup {
 
 export interface Portfolio {
   name: string;
+  /**
+   * Full legal/professional name, used in search metadata when set. Leave undefined until
+   * confirmed (docs/CONTENT-TODO.md); `name` is used instead.
+   */
+  fullName?: string;
+  /** Username used across GitHub and the domain. */
+  handle: string;
   role: string;
+  location: { city: string; country: string; countryCode: string };
+  /** Canonical site URL, with trailing slash. */
+  siteUrl: string;
   positioning: string;
   /** Short stack line in the masthead. Not yet verified, see docs/CONTENT-TODO.md. */
   headlineStack: string[];
@@ -69,7 +79,10 @@ export interface Portfolio {
 
 const portfolio: Portfolio = {
   name: 'Juna',
+  handle: 'arjunastrw',
   role: 'Senior Software Engineer',
+  location: { city: 'Jakarta', country: 'Indonesia', countryCode: 'ID' },
+  siteUrl: 'https://arjunastrw.web.id/',
   positioning:
     'I build backend and frontend systems for clients in capital markets and financial services.',
   headlineStack: ['Go', 'React', 'TypeScript', 'Laravel'],
@@ -163,7 +176,7 @@ const portfolio: Portfolio = {
     },
     {
       label: 'Off the clock',
-      note: 'Used on side projects and this site',
+      note: 'Used on side projects and earlier versions of this site',
       tools: ['Next.js', 'Node.js', 'Flutter', 'Streamlit', 'n8n', 'Three.js'],
     },
   ],

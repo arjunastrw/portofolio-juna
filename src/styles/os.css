@@ -1,0 +1,488 @@
+/*
+ * Retro OS (Win98 dialect): tokens and classic widget primitives.
+ * Ported from the Sovietwave design library (src/designs/retro-os/os.module.css).
+ * Everything sits in @layer components so Tailwind utilities (sr-only, etc.) still win.
+ */
+
+@layer base {
+  :root {
+    --os-face: #c0c0c0;
+    --os-highlight: #ffffff;
+    --os-shadow: #808080;
+    --os-dark: #000000;
+    --os-light: #dfdfdf;
+    --os-title: #000080;
+    --os-title-end: #1084d0;
+    --os-inactive: #808080;
+    --os-inactive-end: #b5b5b5;
+    --os-desktop: #008080;
+    --os-tooltip: #ffffe1;
+
+    /* bevels: layered 1px inset shadows, no blur */
+    --bevel-window: inset -1px -1px var(--os-dark), inset 1px 1px var(--os-light), inset -2px -2px var(--os-shadow),
+      inset 2px 2px var(--os-highlight);
+    --bevel-button: inset -1px -1px var(--os-dark), inset 1px 1px var(--os-highlight), inset -2px -2px var(--os-shadow),
+      inset 2px 2px var(--os-light);
+    --bevel-pressed: inset -1px -1px var(--os-highlight), inset 1px 1px var(--os-dark), inset -2px -2px var(--os-light),
+      inset 2px 2px var(--os-shadow);
+    --bevel-field: inset -1px -1px var(--os-highlight), inset 1px 1px var(--os-shadow), inset -2px -2px var(--os-light),
+      inset 2px 2px var(--os-dark);
+    --bevel-thin-in: inset -1px -1px var(--os-highlight), inset 1px 1px var(--os-shadow);
+    --bevel-thin-out: inset -1px -1px var(--os-shadow), inset 1px 1px var(--os-highlight);
+
+    /* 50% checkerboard used for pressed taskbar buttons and scrollbar tracks */
+    --dither: conic-gradient(var(--os-highlight) 25%, transparent 0 50%, var(--os-highlight) 0 75%, transparent 0);
+
+    --chrome: 'DotGothic16', 'MS Sans Serif', Tahoma, sans-serif;
+    --body: 'Arimo', Arial, Helvetica, sans-serif;
+
+    --taskbar-h: 44px;
+    --desk-h: calc(100dvh - var(--taskbar-h));
+  }
+
+  html {
+    background: var(--os-desktop);
+    color: var(--os-dark);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.55;
+  }
+
+  body {
+    min-height: 100dvh;
+  }
+
+  ::selection {
+    background: var(--os-title);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 1px dotted var(--os-dark);
+    outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  td {
+    text-wrap: pretty;
+  }
+
+  a {
+    color: var(--os-title);
+    text-underline-offset: 2px;
+  }
+
+  a:hover {
+    color: var(--os-title-end);
+  }
+}
+
+@layer components {
+  .os-chrome {
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-smooth: never;
+  }
+
+  /* ---------------- window ---------------- */
+
+  .os-window {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 3px;
+    background: var(--os-face);
+    box-shadow: var(--bevel-window);
+    outline: none;
+  }
+
+  .os-titlebar {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 26px;
+    padding: 2px 3px 2px 4px;
+    background: linear-gradient(90deg, var(--os-title), var(--os-title-end));
+    color: #fff;
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: 16px;
+    line-height: 1;
+    user-select: none;
+  }
+
+  .os-titlebar.is-inactive {
+    background: linear-gradient(90deg, var(--os-inactive), var(--os-inactive-end));
+    color: var(--os-face);
+  }
+
+  .os-titlebar.is-draggable {
+    cursor: default;
+    touch-action: none;
+  }
+
+  .os-title-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    margin: 0;
+    font: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    /* bitmap "bold": 1px horizontal double-strike */
+    text-shadow: 1px 0 0 currentColor;
+    letter-spacing: 0.02em;
+  }
+
+  .os-title-text span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .os-title-text svg {
+    flex: none;
+  }
+
+  .os-title-controls {
+    display: flex;
+    flex: none;
+    gap: 2px;
+  }
+
+  .os-ctrl {
+    display: grid;
+    place-items: center;
+    /* 22px + 2px gap: centres 24px apart, which meets WCAG 2.5.8 target spacing. */
+    width: 22px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    background: var(--os-face);
+    box-shadow: var(--bevel-button);
+    color: var(--os-dark);
+  }
+
+  button.os-ctrl:active {
+    box-shadow: var(--bevel-pressed);
+    padding: 1px 0 0 1px;
+  }
+
+  button.os-ctrl:focus-visible {
+    outline: 1px dotted var(--os-dark);
+    outline-offset: -4px;
+  }
+
+  .os-ctrl-close {
+    margin-left: 2px;
+  }
+
+  .os-menubar {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    gap: 2px 14px;
+    padding: 4px 6px 3px;
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: 16px;
+    line-height: 1.2;
+  }
+
+  .os-menubar u {
+    text-underline-offset: 2px;
+  }
+
+  .os-window-body {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px 10px;
+    container-type: inline-size;
+  }
+
+  .os-statusbar {
+    display: flex;
+    flex: none;
+    gap: 2px;
+    margin-top: 2px;
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: 15px;
+    line-height: 1.3;
+  }
+
+  .os-status-cell {
+    flex: 1;
+    min-width: 0;
+    padding: 2px 6px;
+    box-shadow: var(--bevel-thin-in);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .os-status-cell:first-child {
+    flex: 1.6;
+  }
+
+  /* ---------------- buttons ---------------- */
+
+  .os-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 88px;
+    min-height: 32px;
+    padding: 4px 14px;
+    background: var(--os-face);
+    color: var(--os-dark);
+    border: 0;
+    border-radius: 0;
+    box-shadow: var(--bevel-button);
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: 16px;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .os-btn:hover {
+    color: var(--os-dark);
+  }
+
+  .os-btn:active:not(:disabled),
+  .os-btn.is-pressed {
+    box-shadow: var(--bevel-pressed);
+    padding: 5px 13px 3px 15px;
+  }
+
+  .os-btn:focus-visible {
+    outline: 1px dotted var(--os-dark);
+    outline-offset: -5px;
+  }
+
+  /* default button: extra 1px black frame */
+  .os-btn-default {
+    text-shadow: 1px 0 0 currentColor;
+    box-shadow: inset 0 0 0 1px var(--os-dark), inset -2px -2px var(--os-dark), inset 2px 2px var(--os-highlight),
+      inset -3px -3px var(--os-shadow), inset 3px 3px var(--os-light);
+  }
+
+  .os-btn-default:active:not(:disabled) {
+    box-shadow: inset 0 0 0 1px var(--os-dark), inset 2px 2px var(--os-shadow), inset -2px -2px var(--os-shadow);
+  }
+
+  .os-btn:disabled {
+    color: var(--os-shadow);
+    text-shadow: 1px 1px 0 var(--os-highlight);
+    cursor: default;
+  }
+
+  @media (pointer: coarse) {
+    .os-btn {
+      min-height: 44px;
+    }
+  }
+
+  .os-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 2px 2px 4px;
+  }
+
+  /* ---------------- fields, group boxes, widgets ---------------- */
+
+  .os-field {
+    display: block;
+    min-width: 0;
+    padding: 6px 8px;
+    background: #fff;
+    box-shadow: var(--bevel-field);
+  }
+
+  .os-groupbox {
+    position: relative;
+    min-width: 0;
+    margin: 14px 0 0;
+    padding: 20px 12px 12px;
+    box-shadow: inset -1px -1px var(--os-highlight), inset 1px 1px var(--os-shadow), inset -2px -2px var(--os-shadow),
+      inset 2px 2px var(--os-highlight);
+  }
+
+  .os-group-legend {
+    position: absolute;
+    top: -11px;
+    left: 8px;
+    max-width: calc(100% - 16px);
+    margin: 0;
+    padding: 0 4px;
+    background: var(--os-face);
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 22px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .os-hr {
+    height: 2px;
+    margin: 12px 0 10px;
+    border: 0;
+    box-shadow: inset 0 1px var(--os-shadow), inset 0 -1px var(--os-highlight);
+  }
+
+  .os-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 10px 0 0;
+  }
+
+  .os-chip {
+    padding: 1px 8px;
+    box-shadow: var(--bevel-thin-out);
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .os-addressbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    font-size: 15px;
+  }
+
+  .os-addressbar .os-field {
+    flex: 1;
+    padding: 2px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* property-sheet tabs */
+  .os-tabs {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    padding-left: 2px;
+  }
+
+  .os-tab {
+    margin-top: 4px;
+    padding: 5px 16px;
+    border: 0;
+    background: var(--os-face);
+    color: var(--os-dark);
+    box-shadow: inset 1px 1px var(--os-highlight), inset 2px 2px var(--os-light), inset -1px 0 var(--os-dark),
+      inset -2px 0 var(--os-shadow);
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .os-tab.is-active {
+    margin: 0 -2px -2px;
+    padding: 7px 18px 9px;
+    z-index: 2;
+  }
+
+  .os-tab:focus-visible {
+    outline: 1px dotted var(--os-dark);
+    outline-offset: -5px;
+  }
+
+  .os-tab-panel {
+    padding: 16px 14px 14px;
+    box-shadow: var(--bevel-window);
+  }
+
+  /* scrollbars with arrow buttons (Chromium / WebKit) */
+  .os-scroll::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+  }
+
+  .os-scroll::-webkit-scrollbar-track {
+    background-color: var(--os-face);
+    background-image: var(--dither);
+    background-size: 2px 2px;
+  }
+
+  .os-scroll::-webkit-scrollbar-thumb {
+    background: var(--os-face);
+    box-shadow: var(--bevel-button);
+  }
+
+  .os-scroll::-webkit-scrollbar-corner {
+    background: var(--os-face);
+  }
+
+  .os-scroll::-webkit-scrollbar-button:single-button {
+    display: block;
+    width: 16px;
+    height: 16px;
+    background-color: var(--os-face);
+    background-repeat: no-repeat;
+    background-position: center;
+    box-shadow: var(--bevel-button);
+  }
+
+  .os-scroll::-webkit-scrollbar-button:single-button:vertical:decrement {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M3 0h1v1H3zM2 1h3v1H2zM1 2h5v1H1zM0 3h7v1H0z'/%3E%3C/svg%3E");
+  }
+
+  .os-scroll::-webkit-scrollbar-button:single-button:vertical:increment {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h7v1H0zM1 1h5v1H1zM2 2h3v1H2zM3 3h1v1H3z'/%3E%3C/svg%3E");
+  }
+
+  .os-scroll::-webkit-scrollbar-button:single-button:horizontal:decrement {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='7' shape-rendering='crispEdges'%3E%3Cpath d='M3 0h1v7H3zM2 1h1v5H2zM1 2h1v3H1zM0 3h1v1H0z'/%3E%3C/svg%3E");
+  }
+
+  .os-scroll::-webkit-scrollbar-button:single-button:horizontal:increment {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='7' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v7H0zM1 1h1v5H1zM2 2h1v3H2zM3 3h1v1H3z'/%3E%3C/svg%3E");
+  }
+
+  .os-scroll::-webkit-scrollbar-button:single-button:active {
+    box-shadow: var(--bevel-thin-in), inset 0 0 0 1px var(--os-shadow);
+  }
+
+  /* shortcut arrow over a desktop icon */
+  .os-icon-shortcut {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+  }
+
+  .os-icon-shortcut-arrow {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+  }
+}

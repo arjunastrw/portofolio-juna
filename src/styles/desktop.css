@@ -1,0 +1,443 @@
+/*
+ * Page composition: desktop (floating windows) and stack (phones, small screens).
+ * The mode is set on <html data-mode> by App.
+ */
+
+@layer components {
+  /* ---------------- skip link ---------------- */
+
+  .os-skip {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 1000;
+    padding: 8px 14px;
+    background: var(--os-tooltip);
+    color: var(--os-dark);
+    border: 1px solid var(--os-dark);
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    transform: translateY(-200%);
+  }
+
+  .os-skip:focus {
+    transform: none;
+  }
+
+  /* ---------------- taskbar (bottom) ---------------- */
+
+  .os-taskbar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: var(--taskbar-h);
+    padding: 4px;
+    background: var(--os-face);
+    box-shadow: inset 0 1px var(--os-light), inset 0 2px var(--os-highlight);
+  }
+
+  .os-start-wrap {
+    position: relative;
+    height: 100%;
+    flex: none;
+  }
+
+  .os-start-btn {
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 2px 10px 2px 6px;
+  }
+
+  .os-start-btn:active:not(:disabled),
+  .os-start-btn.is-pressed {
+    padding: 3px 9px 1px 7px;
+  }
+
+  .os-start-label {
+    font-size: 17px;
+    text-shadow: 1px 0 0 currentColor;
+  }
+
+  .os-start-menu {
+    position: absolute;
+    left: -2px;
+    bottom: calc(100% + 6px);
+    display: flex;
+    width: min(280px, calc(100vw - 12px));
+    padding: 3px;
+    background: var(--os-face);
+    box-shadow: var(--bevel-window);
+  }
+
+  .os-start-banner {
+    display: flex;
+    flex: none;
+    align-items: flex-end;
+    justify-content: center;
+    width: 30px;
+    padding: 8px 0;
+    background: linear-gradient(0deg, var(--os-title), var(--os-title-end));
+    color: var(--os-face);
+  }
+
+  .os-start-banner span {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: 20px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .os-start-banner b {
+    color: #fff;
+    font-weight: 400;
+    text-shadow: 1px 0 0 #fff;
+  }
+
+  .os-start-items {
+    flex: 1;
+    padding: 2px 0;
+  }
+
+  .os-start-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 40px;
+    padding: 4px 10px 4px 6px;
+    border: 0;
+    background: none;
+    color: var(--os-dark);
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: 16px;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .os-start-item:hover,
+  .os-start-item:focus {
+    background: var(--os-title);
+    color: #fff;
+  }
+
+  .os-start-sep {
+    height: 2px;
+    margin: 3px 2px;
+    box-shadow: inset 0 1px var(--os-shadow), inset 0 -1px var(--os-highlight);
+  }
+
+  .os-task-sep {
+    flex: none;
+    width: 2px;
+    height: 100%;
+    margin: 0 2px;
+    box-shadow: inset 1px 0 var(--os-shadow), inset -1px 0 var(--os-highlight);
+  }
+
+  .os-tasks {
+    display: flex;
+    flex: 1;
+    gap: 4px;
+    min-width: 0;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow: hidden;
+  }
+
+  .os-tasks li {
+    flex: 0 1 170px;
+    min-width: 0;
+  }
+
+  .os-task {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    height: 100%;
+    padding: 0 8px;
+    border: 0;
+    background: var(--os-face);
+    box-shadow: var(--bevel-button);
+    color: var(--os-dark);
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: 16px;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .os-task span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .os-task svg {
+    flex: none;
+  }
+
+  .os-task.is-active {
+    box-shadow: var(--bevel-pressed);
+    background-image: var(--dither);
+    background-size: 2px 2px;
+    text-shadow: 1px 0 0 currentColor;
+  }
+
+  .os-task:active {
+    box-shadow: var(--bevel-pressed);
+  }
+
+  .os-task:focus-visible {
+    outline: 1px dotted var(--os-dark);
+    outline-offset: -4px;
+  }
+
+  .os-tray {
+    display: flex;
+    flex: none;
+    align-items: center;
+    height: 100%;
+    margin-left: auto;
+    padding: 0 10px;
+    box-shadow: var(--bevel-thin-in);
+  }
+
+  .os-clock {
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: 16px;
+    white-space: nowrap;
+  }
+
+  /* ---------------- desktop icons ---------------- */
+
+  .os-desk-icons ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .os-desk-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 100px;
+    padding: 4px 2px;
+    border: 0;
+    background: none;
+    color: #fff;
+    text-decoration: none;
+    cursor: default;
+    outline: none;
+  }
+
+  .os-desk-icon:hover {
+    color: #fff;
+  }
+
+  .os-desk-label {
+    padding: 1px 3px;
+    border: 1px dotted transparent;
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: 15px;
+    line-height: 1.2;
+    text-align: center;
+    text-shadow: 1px 1px 0 rgb(0 0 0 / 0.5);
+  }
+
+  /* Selection = focus, like the real thing: navy label, dotted focus frame, tinted icon. */
+  .os-desk-icon:focus .os-desk-label {
+    background: var(--os-title);
+    border-color: #ffff00;
+    text-shadow: none;
+  }
+
+  .os-desk-icon:focus svg {
+    filter: brightness(0.75) sepia(1) hue-rotate(190deg) saturate(3);
+  }
+
+  /* ---------------- desktop mode ---------------- */
+
+  /*
+   * The prerendered HTML is the stacked layout. On a desktop-sized screen it stays hidden
+   * until React switches to the desktop, so nothing visibly jumps (no layout shift). If the
+   * script never arrives, it is revealed after a few seconds instead of staying blank.
+   */
+  html[data-mode='desktop'] .os-root.is-stack {
+    visibility: hidden;
+    animation: os-reveal 0s 4s forwards;
+  }
+
+  @keyframes os-reveal {
+    to {
+      visibility: visible;
+    }
+  }
+
+  html[data-mode='desktop'],
+  html[data-mode='desktop'] body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .os-root.is-desktop .os-desk {
+    position: fixed;
+    inset: 0 0 var(--taskbar-h) 0;
+    overflow: hidden;
+  }
+
+  .os-root.is-desktop .os-desk-icons ul {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 10px;
+    height: calc(var(--desk-h) - 24px);
+    padding: 12px 8px;
+  }
+
+  .os-root.is-desktop .os-windows {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .os-root.is-desktop .os-window.is-floating {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-height: calc(var(--desk-h) - 24px);
+    pointer-events: auto;
+  }
+
+  .os-root.is-desktop .os-window.is-floating .os-window-body {
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .os-root.is-desktop .os-window.is-max {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-height: none;
+  }
+
+  .os-root.is-desktop .os-window.is-dragging {
+    user-select: none;
+  }
+
+  /* Short screens: tighten the icon column so it stays a single column beside the windows. */
+  @media (max-height: 720px) {
+    .os-root.is-desktop .os-desk-icons ul {
+      gap: 0;
+      padding-top: 6px;
+    }
+
+    .os-root.is-desktop .os-desk-icon {
+      padding: 2px;
+    }
+  }
+
+  /* ---------------- stack mode ---------------- */
+
+  .os-root.is-stack {
+    padding-bottom: calc(var(--taskbar-h) + 24px);
+  }
+
+  .os-root.is-stack .os-desk-icons ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 6px 2px;
+    width: min(860px, 100% - 20px);
+    margin: 0 auto;
+    padding: 14px 0 6px;
+  }
+
+  .os-root.is-stack .os-desk-icon {
+    width: 100%;
+  }
+
+  .os-root.is-stack .os-windows {
+    display: grid;
+    gap: 24px;
+    width: min(860px, 100% - 20px);
+    margin: 12px auto 0;
+  }
+
+  .os-root.is-stack .os-window {
+    scroll-margin-top: 12px;
+  }
+
+  .os-colophon {
+    width: min(860px, 100% - 20px);
+    margin: 28px auto 0;
+    color: #fff;
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .os-colophon p {
+    margin: 0;
+  }
+
+  @media (max-width: 560px) {
+    .os-tasks {
+      display: none;
+    }
+
+    .os-task-sep {
+      display: none;
+    }
+  }
+
+  /* ---------------- shut down ---------------- */
+
+  .os-shutdown {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 14px;
+    padding: 24px;
+    background: #000;
+    color: #ff8c00;
+    text-align: center;
+  }
+
+  .os-shutdown-text {
+    margin: 0;
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: clamp(24px, 4vw, 40px);
+    line-height: 1.2;
+  }
+
+  .os-shutdown-sub {
+    margin: 0 0 12px;
+    font-family: var(--chrome);
+    -webkit-font-smoothing: none;
+    font-size: 16px;
+    color: #c0c0c0;
+  }
+}

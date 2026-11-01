@@ -1,122 +1,203 @@
-import { Component, lazy, type ComponentType, Suspense, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import Header from './components/sections/Header';
-import Masthead from './components/sections/Masthead';
-import Experience from './components/sections/Experience';
-import SideProjects from './components/sections/SideProjects';
-import Toolkit from './components/sections/Toolkit';
-import Contact from './components/sections/Contact';
-import Colophon from './components/sections/Colophon';
-import { LayoutContext, type Layout } from './layout';
-import { useStageCapable } from './hooks/useStageMode';
-import { useHashSync } from './hooks/useHashSync';
-import { stageBus } from './navigation';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react';
+import portfolio from './data/portfolio';
+import { DesktopContext, TASKBAR_H, cx, useDesktopMode } from './os/desktop';
+import { DesktopIcons } from './os/DesktopIcons';
+import { ShutdownScreen } from './os/ShutdownScreen';
+import { Taskbar, type AppEntry, type LinkEntry } from './os/Taskbar';
+import { Window } from './os/Window';
+import { Icon } from './os/icons';
+import { APP_IDS, appFromHash, initialState, wmReducer, type AppId } from './os/windowManager';
+import About from './apps/About';
+import Experience, { experienceStatus } from './apps/Experience';
+import Projects, { projectsStatus } from './apps/Projects';
+import Toolkit, { toolkitStatus } from './apps/Toolkit';
+import Contact, { ContactStatus, type CopyState } from './apps/Contact';
 
-interface StageProps {
-  onFail: () => void;
-}
+type AppDef = AppEntry & { title: string; menu?: string[] };
 
-/** Rendered instead of the stage when its chunk cannot be loaded: report once, render nothing. */
-function StageUnavailable({ onFail }: StageProps) {
-  useEffect(() => onFail(), [onFail]);
-  return null;
-}
+const APPS: AppDef[] = [
+  { id: 'about', label: 'About Me', icon: 'computer', title: 'Welcome' },
+  { id: 'experience', label: 'Experience', icon: 'folder', title: 'Experience', menu: ['File', 'Edit', 'View', 'Help'] },
+  { id: 'projects', label: 'Side Projects', icon: 'folder', title: 'Side Projects', menu: ['File', 'Edit', 'View', 'Help'] },
+  { id: 'toolkit', label: 'Toolkit', icon: 'properties', title: 'Toolkit Properties' },
+  { id: 'contact', label: 'Contact', icon: 'mail', title: 'Contact - New Message', menu: ['File', 'Edit', 'View', 'Insert', 'Help'] },
+];
 
-// A failed chunk download is handled here rather than thrown, so it never reaches the console as an error.
-const Stage = lazy<ComponentType<StageProps>>(() =>
-  import('./components/stage/Stage').catch((error: unknown) => {
-    if (import.meta.env.DEV) console.info('[stage] 3D chunk failed to load; using the stacked layout.', error);
-    return { default: StageUnavailable };
-  }),
-);
+const LINKS: LinkEntry[] = [
+  { label: 'GitHub', href: portfolio.contact.github, icon: 'globe' },
+  { label: 'LinkedIn', href: portfolio.contact.linkedin, icon: 'globe' },
+];
 
-class StageBoundary extends Component<{ onError: () => void; children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-
-  static getDerivedStateFromError() {
-    return { failed: true };
+function replaceHash(hash: string) {
+  if ((window.location.hash || '') === hash) return;
+  try {
+    window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}${hash}`);
+  } catch {
+    /* Safari throttles history updates; never let that break the page. */
   }
-
-  componentDidCatch(error: unknown) {
-    if (import.meta.env.DEV) console.info('[stage] 3D stage failed; using the stacked layout.', error);
-    this.props.onError();
-  }
-
-  render() {
-    return this.state.failed ? null : this.props.children;
-  }
-}
-
-/** Sticky full-viewport layer behind the content: the canvas plus the text scrim. */
-function StageLayer({ onFail }: { onFail: () => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    stageBus.layer = ref.current;
-    return () => {
-      stageBus.layer = null;
-    };
-  }, []);
-
-  return (
-    <div ref={ref} aria-hidden="true" className="pointer-events-none sticky top-0 -mb-[100dvh] h-dvh overflow-hidden">
-      <StageBoundary onError={onFail}>
-        <Suspense fallback={null}>
-          <Stage onFail={onFail} />
-        </Suspense>
-      </StageBoundary>
-      <div id="stage-scrim" className="stage-scrim absolute inset-y-0 left-0" />
-    </div>
-  );
-}
-
-/** Empty scroll distance between stations; the camera travels while it passes. */
-function Transit() {
-  return <div aria-hidden="true" className="h-[40dvh]" />;
 }
 
 export default function App() {
-  const capable = useStageCapable();
-  const [failed, setFailed] = useState(false);
-  const layout: Layout = capable && !failed ? 'stage' : 'stack';
-  const { activeIndex, go } = useHashSync(layout);
-  const stage = layout === 'stage';
+  const mode = useDesktopMode();
+  const desktop = mode === 'desktop';
+  const [wm, dispatch] = useReducer(wmReducer, undefined, () => {
+    // Prerender (no window): only the stacked layout is rendered, positions don't matter.
+    if (typeof window === 'undefined') return initialState(1280, 800, ['about']);
+    const target = appFromHash(window.location.hash);
+    const openIds: AppId[] = target && target !== 'about' ? ['about', target] : ['about'];
+    return initialState(window.innerWidth, window.innerHeight - TASKBAR_H, openIds);
+  });
+  const [shutdown, setShutdown] = useState(false);
+  const [copyState, setCopyState] = useState<CopyState>('idle');
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  const header = <Header activeIndex={activeIndex} onNavigate={go} />;
-  const main = (
-    <main id="main" tabIndex={-1} className="relative z-10 outline-none">
-      <Masthead />
-      {stage ? <Transit /> : null}
-      <Experience />
-      {stage ? <Transit /> : null}
-      <SideProjects />
-      {stage ? <Transit /> : null}
-      <Toolkit />
-      {stage ? <Transit /> : null}
-      <Contact />
-    </main>
-  );
+  const open = useCallback((id: AppId) => dispatch({ type: 'open', id }), []);
+  const api = useMemo(() => ({ mode, open }), [mode, open]);
+
+  // The inline script in index.html sets this before first paint; keep it in sync afterwards.
+  useEffect(() => {
+    document.documentElement.dataset.mode = mode;
+  }, [mode]);
+
+  // Keyboard focus follows the window that was just opened, minimised or closed.
+  useEffect(() => {
+    if (!desktop || wm.focusTick === 0) return;
+    const target = wm.active
+      ? document.getElementById(wm.active)
+      : document.querySelector<HTMLElement>('.os-desk-icon');
+    target?.focus({ preventScroll: true });
+    // Runs on focus requests only.
+  }, [wm.focusTick]);
+
+  // Desktop: the URL hash names the front window, so any window can be linked to.
+  useEffect(() => {
+    if (!desktop || shutdown) return;
+    replaceHash(wm.active && wm.active !== 'about' ? `#${wm.active}` : '');
+  }, [desktop, shutdown, wm.active]);
+
+  useEffect(() => {
+    const onHash = () => {
+      const id = appFromHash(window.location.hash);
+      if (id && desktop) open(id);
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, [desktop, open]);
+
+  // Stack: content renders after load, so jump to a deep-linked window ourselves.
+  useEffect(() => {
+    if (desktop) return;
+    const id = appFromHash(window.location.hash);
+    if (id && id !== 'about') document.getElementById(id)?.scrollIntoView();
+  }, [desktop]);
+
+  // Keep title bars reachable when the viewport shrinks.
+  useEffect(() => {
+    if (!desktop) return;
+    const clamp = () => dispatch({ type: 'clamp', width: window.innerWidth, height: window.innerHeight - TASKBAR_H });
+    clamp();
+    window.addEventListener('resize', clamp);
+    return () => window.removeEventListener('resize', clamp);
+  }, [desktop]);
+
+  // The shut-down screen is modal: everything behind it is inert.
+  useEffect(() => {
+    rootRef.current?.toggleAttribute('inert', shutdown);
+  }, [shutdown]);
+
+  const onTask = (id: AppId) => {
+    const w = wm.wins[id];
+    dispatch({ type: wm.active === id && !w.minimized ? 'minimize' : 'open', id });
+  };
+
+  const content: Record<AppId, { node: ReactNode; status: ReactNode[] }> = {
+    about: {
+      node: <About />,
+      status: [`${portfolio.revision} · Updated ${portfolio.updated}`, 'Client names withheld under NDA'],
+    },
+    experience: { node: <Experience />, status: experienceStatus() },
+    projects: { node: <Projects />, status: projectsStatus() },
+    toolkit: { node: <Toolkit />, status: toolkitStatus() },
+    contact: {
+      node: <Contact onCopyState={setCopyState} />,
+      status: [<ContactStatus key="copy" state={copyState} />, portfolio.contact.email],
+    },
+  };
 
   return (
-    <LayoutContext.Provider value={layout}>
+    <DesktopContext.Provider value={api}>
       <a
-        href="#main"
-        className="sr-only z-[70] bg-ink font-mono text-xs text-paper focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:px-4 focus:py-3"
+        href="#about"
+        className="os-skip"
+        onClick={(e) => {
+          if (!desktop) return;
+          e.preventDefault();
+          open('about');
+        }}
       >
         Skip to content
       </a>
-      <div className="grain" aria-hidden="true" />
-      {stage ? (
-        <div className="relative">
-          <StageLayer onFail={() => setFailed(true)} />
-          {header}
-          {main}
+
+      <div ref={rootRef} className={cx('os-root', desktop ? 'is-desktop' : 'is-stack')}>
+        <div className="os-desk">
+          <DesktopIcons apps={APPS} links={LINKS} />
+          <main id="main" className="os-windows">
+            {APP_IDS.map((id) => {
+              const app = APPS.find((a) => a.id === id) as AppDef;
+              return (
+                <Window
+                  key={id}
+                  id={id}
+                  title={app.title}
+                  icon={<Icon name={app.icon} scale={1} />}
+                  mode={mode}
+                  state={wm.wins[id]}
+                  active={wm.active === id}
+                  titleIsHeading={id !== 'about'}
+                  menu={app.menu}
+                  status={content[id].status}
+                  onClose={() => dispatch({ type: 'close', id })}
+                  onMinimize={() => dispatch({ type: 'minimize', id })}
+                  onToggleMax={() => dispatch({ type: 'toggleMax', id })}
+                  onRaise={() => dispatch({ type: 'raise', id })}
+                  onMove={(x, y) => dispatch({ type: 'move', id, x, y })}
+                >
+                  {content[id].node}
+                </Window>
+              );
+            })}
+          </main>
+          {desktop ? null : (
+            <footer className="os-colophon">
+              <p suppressHydrationWarning>
+                &copy; {new Date().getFullYear()} {portfolio.name} · {portfolio.revision} · Updated {portfolio.updated}
+              </p>
+              <p>Client names withheld under NDA</p>
+            </footer>
+          )}
         </div>
-      ) : (
-        <>
-          {header}
-          {main}
-        </>
-      )}
-      <Colophon />
-    </LayoutContext.Provider>
+
+        <Taskbar
+          apps={APPS}
+          links={LINKS}
+          wins={wm.wins}
+          active={wm.active}
+          onTask={onTask}
+          onShutDown={() => {
+            dispatch({ type: 'closeAll' });
+            setShutdown(true);
+          }}
+        />
+      </div>
+
+      {shutdown ? (
+        <ShutdownScreen
+          onRestart={() => {
+            setShutdown(false);
+            open('about');
+          }}
+        />
+      ) : null}
+    </DesktopContext.Provider>
   );
 }
