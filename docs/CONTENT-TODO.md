@@ -38,6 +38,9 @@ yang di-gitignore).
 
 ## Lainnya
 
+- [ ] Nama lengkap untuk SEO (`fullName` di `portfolio.ts`). Selama kosong, title, JSON-LD
+      dan meta memakai "Juna" saja, yang sulit muncul di pencarian nama.
+
 - [ ] Email `arjunastrw@gmail.com` dan LinkedIn `linkedin.com/in/arjunasatria`. Ada dua
       versi LinkedIn di kode lama (`arjunasatria` dan `arjunastrw`).
 - [ ] Riwayat sebelum Oct 2024 (pendidikan, pekerjaan lama): tampilkan atau tidak?
